@@ -1,4 +1,4 @@
-import 'package:bloc_auth_app/db/database_helper.dart';
+import 'package:bloc_auth_app/utils/database_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/item_model.dart';
 import '../../repository/item_repository.dart';
