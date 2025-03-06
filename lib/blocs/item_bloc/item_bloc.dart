@@ -1,4 +1,5 @@
 import 'package:bloc_auth_app/utils/database_helper.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/item_model.dart';
 import '../../repository/item_repository.dart';
@@ -8,6 +9,7 @@ import 'item_state.dart';
 class ItemBloc extends Bloc<ItemEvent, ItemState> {
   final ItemRepository itemRepository;
   final DatabaseHelper databaseHelper = DatabaseHelper.instance;
+  final Connectivity _connectivity = Connectivity();
 
   ItemBloc(this.itemRepository) : super(ItemInitialState()) {
     on<FetchItemsEvent>(_onFetchItems);
@@ -20,8 +22,11 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
     emit(ItemLoadingState());
     try {
       List<ItemModel> items = [];
-      const onlineStatus = false;
-      if (onlineStatus) {
+      List<ConnectivityResult> connectionStatus =
+          await _connectivity.checkConnectivity();
+
+      if (connectionStatus.contains(ConnectivityResult.mobile) ||
+          connectionStatus.contains(ConnectivityResult.wifi)) {
         items = await itemRepository.fetchItems();
         await databaseHelper.deleteAllItem();
         for (final item in items) {

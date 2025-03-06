@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:crypt/crypt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,12 +19,12 @@ class SecureStorage {
     await storage.write(key: _keyUserDetail, value: jsonEncode(user));
   }
 
-  Future<User> getUser() async {
+  Future<User?> getUser() async {
     final user = await storage.read(key: _keyUserDetail);
     if (user != null) {
       return jsonDecode(user);
     } else {
-      throw Future.error("Cannot get user");
+      return Future.value(null);
     }
   }
 
@@ -34,6 +35,16 @@ class SecureStorage {
   Future setPassWord(String password) async {
     await storage.write(
         key: _keyPassWord, value: Crypt.sha256(password).toString());
+  }
+
+  Future<void> deleteAll() async {
+    await Future.wait([
+      storage.delete(key: _keyEmail),
+      storage.delete(key: _keyPassWord),
+      storage.delete(key: _keyUserDetail)
+    ]).onError((Object error, StackTrace stackTrace) {
+      throw Exception("error in logout");
+    });
   }
 
   Future<bool> checkPassWord(String password) async {

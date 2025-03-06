@@ -1,17 +1,35 @@
 import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../repository/auth_repository.dart';
+import '../../utils/secure_storage.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
+  final Connectivity _connectivity = Connectivity();
 
   AuthBloc(this.authRepository) : super(AuthInitial()) {
     on<SignInEvent>((event, emit) async {
       emit(AuthLoading());
+      SecureStorage storage = SecureStorage();
       try {
-        await authRepository.signIn(event.email, event.password);
+        List<ConnectivityResult> connectionStatus =
+            await _connectivity.checkConnectivity();
+        if (connectionStatus.contains(ConnectivityResult.mobile) ||
+            connectionStatus.contains(ConnectivityResult.wifi)) {
+          await authRepository.signIn(event.email, event.password);
+
+          storage.setEmail(event.email);
+          storage.setPassWord(event.password);
+        } else {
+          final userEmail = await storage.getEmail();
+          final chkPassword = await storage.checkPassWord(event.password);
+          if (userEmail != event.email || chkPassword == false) {
+            throw Future.error("Email or password is incorrect");
+          }
+        }
         emit(Authenticated());
       } catch (e) {
         emit(AuthError(e.toString()));
@@ -34,12 +52,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<SignOutEvent>((event, emit) async {
       await authRepository.signOut();
+      SecureStorage storage = SecureStorage();
+      await storage.deleteAll();
       emit(AuthInitial());
     });
-  }
-
-  FutureOr<void> handleError(Object error, StackTrace stackTrace) {
-    print(error);
-    print(stackTrace);
   }
 }

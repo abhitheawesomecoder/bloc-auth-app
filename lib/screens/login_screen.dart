@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/auth_bloc/auth_state.dart';
+import '../utils/secure_storage.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -30,6 +31,10 @@ class LoginScreenState extends State<LoginScreen> {
             if (state is Authenticated) {
               final FirebaseAuth auth = FirebaseAuth.instance;
               User? user = auth.currentUser;
+              SecureStorage storage = SecureStorage();
+              if (user != null) {
+                storage.setUser(user);
+              }
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
