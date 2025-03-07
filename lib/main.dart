@@ -9,6 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'globals.dart';
 import 'models/user_model.dart';
 import 'repository/auth_repository.dart';
 import 'blocs/auth_bloc/auth_bloc.dart';
@@ -24,6 +25,7 @@ void main() async {
   //     await connectivity.checkConnectivity();
   Connection().initConnection();
   SecureStorage storage = SecureStorage();
+
   final lastUser = await storage.getUser();
   //await FCMService().initFCM(); // Initialize Firebase Messaging
   // FirebaseMessaging.instance.getToken().then((token) {
@@ -52,6 +54,7 @@ class MyApp extends StatelessWidget {
         //BlocProvider(create: (context) => ItemBloc(ItemRepository())),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         home: CheckAuthStatus(
           // connectionStatus: connectionStatus,

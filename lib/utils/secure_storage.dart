@@ -22,12 +22,16 @@ class SecureStorage {
   }
 
   Future<UserModel?> getUser() async {
+    //try {
     final user = await storage.read(key: _keyUserDetail);
     if (user != null) {
       return UserModel.fromJson(jsonDecode(user));
     } else {
       return Future.value(null);
     }
+    // } catch (error) {
+    //   return Future.value(null);
+    // }
   }
 
   Future<String?> getEmail() async {

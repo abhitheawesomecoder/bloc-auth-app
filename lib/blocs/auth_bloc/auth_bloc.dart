@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bloc_auth_app/utils/connection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../repository/auth_repository.dart';
@@ -13,12 +14,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this.authRepository) : super(AuthInitial()) {
     on<SignInEvent>((event, emit) async {
       emit(AuthLoading());
+
       SecureStorage storage = SecureStorage();
       try {
-        List<ConnectivityResult> connectionStatus =
-            await _connectivity.checkConnectivity();
-        if (connectionStatus.contains(ConnectivityResult.mobile) ||
-            connectionStatus.contains(ConnectivityResult.wifi)) {
+        await Connection().initConnection();
+        if (Connection().isConnected) {
           await authRepository.signIn(event.email, event.password);
 
           storage.setEmail(event.email);
@@ -30,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           if (userEmail != event.email || chkPassword == false) {
             throw Future.error("Email or password is incorrect");
           }
+          print("event");
           emit(Authenticated(isOffline: true));
         }
       } catch (e) {
@@ -53,8 +54,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<SignOutEvent>((event, emit) async {
       await authRepository.signOut();
-      SecureStorage storage = SecureStorage();
-      await storage.deleteAll();
+      // SecureStorage storage = SecureStorage();
+      // await storage.deleteAll();
       emit(AuthInitial());
     });
   }

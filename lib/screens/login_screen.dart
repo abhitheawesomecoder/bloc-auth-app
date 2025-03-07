@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/auth_bloc/auth_state.dart';
+import '../globals.dart';
+import '../main.dart';
 import '../utils/secure_storage.dart';
 import 'home_screen.dart';
 
@@ -21,7 +23,17 @@ class LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  // bool isConnected = false;
+
+  // @override
+  // void initState() {
+  //   Connection().initConnection().then((onValue) => setState(() {
+  //         isConnected = Connection().isConnected;
+  //       }));
+  //   super.initState();
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +44,7 @@ class LoginScreenState extends State<LoginScreen> {
           listener: (context, state) async {
             if (state is Authenticated) {
               SecureStorage storage = SecureStorage();
-              if (Connection().isConnected) {
+              if (!state.isOffline) {
                 final FirebaseAuth auth = FirebaseAuth.instance;
                 User? user = auth.currentUser;
 
