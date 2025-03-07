@@ -23,14 +23,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
           storage.setEmail(event.email);
           storage.setPassWord(event.password);
+          emit(Authenticated());
         } else {
           final userEmail = await storage.getEmail();
           final chkPassword = await storage.checkPassWord(event.password);
           if (userEmail != event.email || chkPassword == false) {
             throw Future.error("Email or password is incorrect");
           }
+          emit(Authenticated(isOffline: true));
         }
-        emit(Authenticated());
       } catch (e) {
         emit(AuthError(e.toString()));
       }

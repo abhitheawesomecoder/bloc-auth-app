@@ -1,4 +1,6 @@
+import 'package:bloc_auth_app/models/user_model.dart';
 import 'package:bloc_auth_app/screens/register_screen.dart';
+import 'package:bloc_auth_app/utils/connection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,7 +21,7 @@ class LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,18 +29,26 @@ class LoginScreenState extends State<LoginScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: BlocConsumer<AuthBloc, AuthState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state is Authenticated) {
-              final FirebaseAuth auth = FirebaseAuth.instance;
-              User? user = auth.currentUser;
               SecureStorage storage = SecureStorage();
-              if (user != null) {
-                storage.setUser(user);
+              if (Connection().isConnected) {
+                final FirebaseAuth auth = FirebaseAuth.instance;
+                User? user = auth.currentUser;
+
+                if (user != null) {
+                  final authUser = UserModel.fromUser(user);
+                  storage.setUser(authUser);
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => HomeScreen(user: authUser)));
+                }
+              } else {
+                final authUser = await storage.getUser();
+                navigatorKey.currentState?.pushReplacement(MaterialPageRoute(
+                    builder: (context) => HomeScreen(user: authUser)));
               }
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => HomeScreen(user: user)));
             } else if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

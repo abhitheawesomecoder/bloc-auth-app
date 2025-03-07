@@ -4,6 +4,8 @@ import 'package:crypt/crypt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../models/user_model.dart';
+
 class SecureStorage {
   final storage = const FlutterSecureStorage();
 
@@ -15,16 +17,14 @@ class SecureStorage {
     await storage.write(key: _keyEmail, value: email);
   }
 
-  Future setUser(User user) async {
-    await storage.write(key: _keyUserDetail, value: user.toString());
+  Future setUser(UserModel user) async {
+    await storage.write(key: _keyUserDetail, value: jsonEncode(user));
   }
 
-  Future<User?> getUser() async {
+  Future<UserModel?> getUser() async {
     final user = await storage.read(key: _keyUserDetail);
     if (user != null) {
-      print("user");
-      print(user);
-      return jsonDecode(user);
+      return UserModel.fromJson(jsonDecode(user));
     } else {
       return Future.value(null);
     }

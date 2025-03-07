@@ -1,6 +1,7 @@
 import 'package:bloc_auth_app/repository/item_repository.dart';
 import 'package:bloc_auth_app/screens/home_screen.dart';
 import 'package:bloc_auth_app/screens/login_screen.dart';
+import 'package:bloc_auth_app/utils/connection.dart';
 import 'package:bloc_auth_app/utils/secure_storage.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'models/user_model.dart';
 import 'repository/auth_repository.dart';
 import 'blocs/auth_bloc/auth_bloc.dart';
 import 'blocs/auth_bloc/auth_event.dart';
@@ -17,9 +19,10 @@ import 'fcm_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  final Connectivity connectivity = Connectivity();
-  List<ConnectivityResult> connectionStatus =
-      await connectivity.checkConnectivity();
+  // final Connectivity connectivity = Connectivity();
+  // List<ConnectivityResult> connectionStatus =
+  //     await connectivity.checkConnectivity();
+  Connection().initConnection();
   SecureStorage storage = SecureStorage();
   final lastUser = await storage.getUser();
   //await FCMService().initFCM(); // Initialize Firebase Messaging
@@ -27,15 +30,18 @@ void main() async {
   //   print(token);
   // });
   runApp(MyApp(
-    connectionStatus: connectionStatus,
+    // connectionStatus: connectionStatus,
     user: lastUser,
   ));
 }
 
 class MyApp extends StatelessWidget {
-  final List<ConnectivityResult> connectionStatus;
-  final User? user;
-  const MyApp({super.key, required this.connectionStatus, required this.user});
+  // final List<ConnectivityResult> connectionStatus;
+  final UserModel? user;
+  const MyApp(
+      {super.key,
+      // required this.connectionStatus,
+      required this.user});
 
   // This widget is the root of your application.
   @override
@@ -48,7 +54,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: CheckAuthStatus(
-          connectionStatus: connectionStatus,
+          // connectionStatus: connectionStatus,
           lastUser: user,
         ),
       ),
@@ -57,22 +63,24 @@ class MyApp extends StatelessWidget {
 }
 
 class CheckAuthStatus extends StatelessWidget {
-  final List<ConnectivityResult> connectionStatus;
-  final User? lastUser;
+  // final List<ConnectivityResult> connectionStatus;
+  final UserModel? lastUser;
   const CheckAuthStatus(
-      {super.key, required this.connectionStatus, required this.lastUser});
+      {super.key,
+      // required this.connectionStatus,
+      required this.lastUser});
 
   @override
   Widget build(BuildContext context) {
-    if (connectionStatus.contains(ConnectivityResult.mobile) ||
-        connectionStatus.contains(ConnectivityResult.wifi)) {
+    if (Connection().isConnected) {
       final FirebaseAuth auth = FirebaseAuth.instance;
-      User? user = auth.currentUser;
+      final user = auth.currentUser;
       if (user == null) {
         return const LoginScreen();
       } else {
+        final authUser = UserModel.fromUser(user);
         BlocProvider.of<AuthBloc>(context).add(IfAuthEvent());
-        return HomeScreen(user: user);
+        return HomeScreen(user: authUser);
       }
     } else {
       if (lastUser == null) {

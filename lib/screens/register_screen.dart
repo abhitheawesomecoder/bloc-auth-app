@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/auth_bloc/auth_state.dart';
+import '../models/user_model.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 
@@ -30,11 +31,12 @@ class RegisterScreenState extends State<RegisterScreen> {
             if (state is Authenticated) {
               final FirebaseAuth auth = FirebaseAuth.instance;
               User? user = auth.currentUser;
+
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                       builder: (context) => HomeScreen(
-                            user: user,
+                            user: UserModel.fromUser(user!),
                           )));
             } else if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(

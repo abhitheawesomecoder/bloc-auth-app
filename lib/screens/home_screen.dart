@@ -7,11 +7,12 @@ import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/item_bloc/item_bloc.dart';
 import '../blocs/item_bloc/item_event.dart';
 import '../blocs/item_bloc/item_state.dart';
+import '../models/user_model.dart';
 import '../repository/item_repository.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  final User? user;
+  final UserModel? user;
 
   const HomeScreen({super.key, this.user});
 
