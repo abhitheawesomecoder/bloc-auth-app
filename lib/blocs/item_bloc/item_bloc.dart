@@ -1,3 +1,4 @@
+import 'package:bloc_auth_app/utils/connection.dart';
 import 'package:bloc_auth_app/utils/database_helper.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,11 +23,10 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
     emit(ItemLoadingState());
     try {
       List<ItemModel> items = [];
-      List<ConnectivityResult> connectionStatus =
-          await _connectivity.checkConnectivity();
 
-      if (connectionStatus.contains(ConnectivityResult.mobile) ||
-          connectionStatus.contains(ConnectivityResult.wifi)) {
+      await Connection().initConnection();
+
+      if (Connection().isConnected) {
         items = await itemRepository.fetchItems();
         await databaseHelper.deleteAllItem();
         for (final item in items) {
