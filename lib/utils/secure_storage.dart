@@ -16,12 +16,14 @@ class SecureStorage {
   }
 
   Future setUser(User user) async {
-    await storage.write(key: _keyUserDetail, value: jsonEncode(user));
+    await storage.write(key: _keyUserDetail, value: user.toString());
   }
 
   Future<User?> getUser() async {
     final user = await storage.read(key: _keyUserDetail);
     if (user != null) {
+      print("user");
+      print(user);
       return jsonDecode(user);
     } else {
       return Future.value(null);
